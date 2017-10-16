@@ -7,7 +7,11 @@ router.get('/', function(req, res, next) {
 
   var authHeader = req.headers.authorization;
   if (!authHeader){
-    res.render('home', { title: 'Express' });  
+    
+            var err = new Error('You are not authenticated!');
+        err.status = 401;
+        next(err);
+        return;
   }
   else{
   var auth = new Buffer(authHeader.split(' ')[1],
@@ -15,8 +19,24 @@ router.get('/', function(req, res, next) {
   var user = auth[0];
   var pass = auth[1];
   console.log('auth:',auth)
+  if (user == 'mos' && pass == 'mos'){
   res.render('home', { title: 'Express' });
   }
+  else{
+     var err = new Error('You are not authenticated!');
+        err.status = 401;
+        next(err);
+  }
+} 
+ //res.render('home', { title: 'Express' });
+});
+
+router.get('/',function(err,req,res,next) {
+            res.writeHead(err.status || 500, {
+            'WWW-Authenticate': 'Basic',
+            'Content-Type': 'text/plain'
+        });
+        res.end(err.message);
 });
 
 module.exports = router;
